@@ -24,7 +24,7 @@ class PseudoLearner:
 
 class PseudoDRLearner(PseudoLearner):
 
-    def __init__(self,k,seed,m_model=sklearn.linear_model.LinearRegression,pt_model=sklearn.linear_model.LogisticRegression,cate_model=sklearn.linear_model.LinearRegression):
+    def __init__(self,k,seed,clip_pt=None,m_model=sklearn.linear_model.LinearRegression,pt_model=sklearn.linear_model.LogisticRegression,cate_model=sklearn.linear_model.LinearRegression):
         '''
         k: number of folds for cross-fitting
         seed: random seed used to initialize K fold cross-validation and sklearn models
@@ -37,6 +37,7 @@ class PseudoDRLearner(PseudoLearner):
         self.pt_model = pt_model
         self.cate_model = cate_model
         self.seed = seed
+        self.clip_pt = clip_pt
 
     def train(self,x,y,trt,**kwargs):
         '''
@@ -87,6 +88,9 @@ class PseudoDRLearner(PseudoLearner):
             m0_pred = m_curr_model.predict(np.column_stack((x_test,np.zeros([len(idx_te),1]))))
             m1_pred = m_curr_model.predict(np.column_stack((x_test,np.ones([len(idx_te),1]))))
             pt_pred = pt_curr_model.predict_proba(x_test)[:,pt_curr_model.classes_==1].ravel()
+            if self.clip_pt is not None:
+                pt_pred = np.clip(pt_pred,self.clip_pt,1-self.clip_pt)
+
             m_pred = np.array([m0_pred[j] if trt_test[j]==0 else m1_pred[j] for j in range(len(idx_te))])
             self.pseudo_outcome[idx_te]  = ((trt_test-pt_pred)/(pt_pred*(1-pt_pred)))*(y_test-m_pred) + m1_pred - m0_pred
             self.y0_pred[idx_te] = m0_pred
@@ -100,11 +104,12 @@ class PseudoDRLearner(PseudoLearner):
 
 class PseudoIPWLearner(PseudoLearner):
 
-    def __init__(self,k,seed,pt_model=sklearn.linear_model.LogisticRegression,cate_model=sklearn.linear_model.LinearRegression):
+    def __init__(self,k,seed,pt_clip=None,pt_model=sklearn.linear_model.LogisticRegression,cate_model=sklearn.linear_model.LinearRegression):
         self.k = k
         self.pt_model = pt_model
         self.cate_model = cate_model
         self.seed = seed
+        self.pt_clip = pt_clip
 
     def train(self,x,y,trt,**kwargs):
         '''
@@ -142,6 +147,8 @@ class PseudoIPWLearner(PseudoLearner):
 
             # Estimation of pseudo-outcome in k-th fold
             pt_pred = pt_curr_model.predict_proba(x_test)[:,pt_curr_model.classes_==1].ravel()
+            if self.pt_clip is not None:
+                pt_pred = np.clip(pt_pred,self.pt_clip,1-self.pt_clip)
             psi = ((trt_test-pt_pred)/(pt_pred*(1-pt_pred)))*y_test
             self.pseudo_outcome[idx_te] = psi
             self.p_pred[idx_te] = pt_pred

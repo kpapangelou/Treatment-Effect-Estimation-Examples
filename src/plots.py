@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-def create_boxplot(data,names_leg,xtick_lab,x_lab=None,y_lab=None,ref=None):
+def create_boxplot(data,names_leg,xtick_lab,x_lab=None,y_lab=None,ref=None,legend_loc=None):
 
     num_methods = len(data)
     num_simulations = data[0].shape[0]
@@ -35,4 +35,7 @@ def create_boxplot(data,names_leg,xtick_lab,x_lab=None,y_lab=None,ref=None):
     plt_leg = []
     for i in range(num_methods):
         plt_leg.append(bp["boxes"][i])
-    ax.legend(plt_leg, names_leg, loc='upper right')
+    if legend_loc is not None:
+        ax.legend(plt_leg, names_leg,loc=legend_loc)
+    else:
+        ax.legend(plt_leg, names_leg)

@@ -1,0 +1,13 @@
+[project]
+name = "treatment-effect-estimation-examples"
+version = "0.1.0"
+description = "Simulations and use-cases relating to estimators of (Conditional) Average Treatment Effect ((C)ATE)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.1",
+    "scikit-learn>=1.8.0",
+    "scipy>=1.17.0",
+    "statsmodels>=0.14.6",
+]
