@@ -32,8 +32,8 @@ def ex3_sample1(n,d):
     X = np.random.multivariate_normal(np.zeros(d),np.eye(d),size=n)
     T = np.random.choice([0,1],size=n)
     eps = np.random.normal(0,0.5,size=n)
-    Y0 = 0
-    Y1 = 1+np.sum(X,axis=1)
+    Y0 = np.sum(X,axis=1)
+    Y1 = 1+Y0
     Y = Y1*T + (1-T)*Y0 + eps
     ATE = 1
 
